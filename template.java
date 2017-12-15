@@ -887,3 +887,118 @@ public class SearchTemplate{
 }
 
 
+
+
+package com.pingan.elaticsearch.app;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.pingan.elaticsearch.dto.TwtterDTO;
+import com.pingan.elaticsearch.service.CountService;
+import com.pingan.elaticsearch.service.DataService;
+import com.pingan.elaticsearch.service.InsertService;
+import com.pingan.elaticsearch.service.impl.CountServiceImpl;
+import com.pingan.elaticsearch.service.impl.DataServiceImpl;
+import com.pingan.elaticsearch.service.impl.InsertServiceImpl;
+
+public class EsApp {
+	
+	private static Gson gson = new Gson();
+
+	public static void main(String[] args) {
+		// insert();
+		
+		// count();
+		
+		select();
+	}
+	
+	
+	public static void select() {
+		
+		DataService dataService = new DataServiceImpl();
+		dataService.getMatchAllQueryData("twtter");
+		
+		Map<String, Object> condition = new HashMap<String, Object>();
+		condition.put("user", "jhon");
+		dataService.getBoolQueryData("twtter", condition);
+		
+		dataService.getPhraseQueryData("twtter", "job", "IT");
+		
+	}
+
+
+	public static void count() {
+		CountService countService = new CountServiceImpl();
+		Long countTwtter = countService.getMatchAllQueryCount("twtter");
+		System.out.println(countTwtter);
+		
+		Map<String, Object> condition = new HashMap<String, Object>();
+		condition.put("user", "jhon");
+		Long countBoolean = countService.getBoolQueryCount("twtter", condition);
+		System.out.println(countBoolean);
+		
+		Long jobCount = countService.getPhraseQueryCount("twtter", "job", "IT");
+		System.out.println(jobCount);
+		
+	}
+
+
+	public static void insert(){
+		InsertService insertService = new InsertServiceImpl();
+		
+		TwtterDTO dto = new TwtterDTO();
+		dto.setUser("jhon");
+		dto.setPostDate(new Date());
+		dto.setMessage("this is a test for es insert!");
+		String dtoJson = gson.toJson(dto);
+		System.out.println(dtoJson);
+		
+		insertService.ingest("twtter", "user", dtoJson);
+		
+		List<String> userList = new ArrayList<String>();
+		TwtterDTO dto1 = new TwtterDTO();
+		dto1.setUser("Tom");
+		dto1.setPostDate(new Date());
+		dto1.setMessage("this is Tom, Use a test for es insert!");
+		String dtoJson1 = gson.toJson(dto1);
+		userList.add(dtoJson1);
+		
+		TwtterDTO dto2 = new TwtterDTO();
+		dto2.setUser("Amy");
+		dto2.setPostDate(new Date());
+		dto2.setMessage("this is Amy, Use a test for es insert!");
+		String dtoJson2 = gson.toJson(dto2);
+		userList.add(dtoJson2);
+		
+		insertService.ingest("twtter", "user", userList);
+		
+		
+		List<String> jobList = new ArrayList<String>();
+		TwtterDTO dto3 = new TwtterDTO();
+		dto3.setJob("IT");
+		dto3.setPostDate(new Date());
+		dto3.setMessage("this job is IT, Use a test for es insert!");
+		String dtoJson3 = gson.toJson(dto3);
+		jobList.add(dtoJson3);
+		
+		TwtterDTO dto4 = new TwtterDTO();
+		dto3.setJob("DOCTOR");
+		dto4.setPostDate(new Date());
+		dto4.setMessage("this job is DOCTOR, Use a test for es insert!");
+		String dtoJson4 = gson.toJson(dto4);
+		jobList.add(dtoJson4);
+		
+		insertService.ingest("twtter", "job", jobList);
+	}
+	
+	
+	
+}
+
+
